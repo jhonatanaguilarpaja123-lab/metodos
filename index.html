@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Métodos Numéricos - Aprende y Practica</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <h1>∑ Métodos Numéricos</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#metodos">Métodos</a></li>
+                <li><a href="#calculadoras">Calculadoras</a></li>
+                <li><a href="#acerca">Acerca de</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle">☰</button>
+        </nav>
+    </header>
+
+    <section id="inicio" class="hero">
+        <div class="hero-content">
+            <h2>Métodos Numéricos</h2>
+            <p>Herramientas matemáticas computacionales para resolver problemas complejos mediante aproximaciones numéricas.</p>
+            <div class="hero-buttons">
+                <a href="#metodos" class="btn btn-primary">Explorar Métodos</a>
+                <a href="#calculadoras" class="btn btn-secondary">Ir a Calculadoras</a>
+            </div>
+        </div>
+        <div class="hero-animation">
+            <div class="floating-formula">f(x) = 0</div>
+            <div class="floating-formula delay-1">∫ f(x)dx</div>
+            <div class="floating-formula delay-2">Ax = b</div>
+            <div class="floating-formula delay-3">√2 ≈ 1.4142</div>
+        </div>
+    </section>
+
+    <section id="metodos" class="methods">
+        <div class="container">
+            <h2 class="section-title">Métodos Principales</h2>
+            <div class="methods-grid">
+                <div class="method-card">
+                    <div class="method-icon">🔍</div>
+                    <h3>Bisección</h3>
+                    <p>Método de búsqueda de raíces que divide repetidamente un intervalo por la mitad.</p>
+                    <div class="method-details">
+                        <p><strong>Ventaja:</strong> Convergencia garantizada</p>
+                        <p><strong>Desventaja:</strong> Convergencia lenta</p>
+                        <a href="#calc-biseccion" class="btn-link">Probar →</a>
+                    </div>
+                </div>
+                <div class="method-card">
+                    <div class="method-icon">📈</div>
+                    <h3>Newton-Raphson</h3>
+                    <p>Método iterativo que usa la derivada para encontrar raíces de funciones. Rápida convergencia.</p>
+                    <div class="method-details">
+                        <p><strong>Ventaja:</strong> Muy rápido</p>
+                        <p><strong>Desventaja:</strong> Requiere derivada</p>
+                        <a href="#calc-newton" class="btn-link">Probar →</a>
+                    </div>
+                </div>
+                <div class="method-card">
+                    <div class="method-icon">📊</div>
+                    <h3>Regla Falsa</h3>
+                    <p>Combina características de bisección y secante para mejorar la velocidad de convergencia.</p>
+                    <div class="method-details">
+                        <p><strong>Ventaja:</strong> Mejor que bisección</p>
+                        <p><strong>Desventaja:</strong> Puede estancarse</p>
+                        <a href="#calc-reglafalsa" class="btn-link">Probar →</a>
+                    </div>
+                </div>
+                <div class="method-card">
+                    <div class="method-icon">📐</div>
+                    <h3>Punto Fijo</h3>
+                    <p>Reescribe la ecuación f(x)=0 como x=g(x) y itera hasta la convergencia.</p>
+                    <div class="method-details">
+                        <p><strong>Ventaja:</strong> Fácil de implementar</p>
+                        <p><strong>Desventaja:</strong> Depende de g(x)</p>
+                        <a href="#calc-puntofijo" class="btn-link">Probar →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="calculadoras" class="calculators">
+        <div class="container">
+            <h2 class="section-title">Calculadoras Interactivas</h2>
+            <p class="section-subtitle">Pon en práctica los métodos numéricos con nuestras calculadoras</p>
+
+            <div class="calculator-section" id="calc-biseccion">
+                <div class="calc-header">
+                    <h3>🔍 Método de Bisección</h3>
+                    <p>Encuentra la raíz de una función en un intervalo [a, b]</p>
+                </div>
+                <div class="calc-body">
+                    <div class="form-group">
+                        <label>Función f(x):</label>
+                        <input type="text" id="bis-funcion" placeholder="Ej: x^3 - x - 2" value="x^3 - x - 2">
+                        <small>Usa: ^ para potencia, * para multiplicación, / división, Math.sin(), Math.cos(), Math.exp(), Math.log()</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Límite inferior (a):</label>
+                            <input type="number" id="bis-a" step="any" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Límite superior (b):</label>
+                            <input type="number" id="bis-b" step="any" value="2">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tolerancia:</label>
+                            <input type="number" id="bis-tol" step="any" value="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label>Máx. iteraciones:</label>
+                            <input type="number" id="bis-maxiter" value="100">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="calcularBiseccion()">Calcular</button>
+                        <button class="btn btn-secondary-alt" onclick="graficarBiseccion()">📊 Graficar Función</button>
+                    </div>
+                    <div id="bis-chart-container" class="chart-container" style="display:none;">
+                        <div class="chart-toolbar">
+                            <div class="zoom-controls">
+                                <button class="zoom-btn zoom-out" onclick="zoomOutBiseccion()" title="Alejar (Zoom Out)">➖</button>
+                                <button class="zoom-btn zoom-reset" onclick="resetZoomBiseccion()" title="Restablecer vista">⟳</button>
+                                <button class="zoom-btn zoom-in" onclick="zoomInBiseccion()" title="Acercar (Zoom In)">➕</button>
+                            </div>
+                            <span class="zoom-level" id="bis-zoom-level">Zoom: 1.00×</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="bis-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="resultado" id="bis-resultado"></div>
+                </div>
+            </div>
+
+            <div class="calculator-section" id="calc-newton">
+                <div class="calc-header">
+                    <h3>📈 Método de Newton-Raphson</h3>
+                    <p>Encuentra raíces usando la derivada de la función</p>
+                </div>
+                <div class="calc-body">
+                    <div class="form-group">
+                        <label>Función f(x):</label>
+                        <input type="text" id="new-funcion" placeholder="Ej: x^2 - 4" value="x^2 - 4">
+                    </div>
+                    <div class="form-group">
+                        <label>Derivada f'(x):</label>
+                        <input type="text" id="new-derivada" placeholder="Ej: 2*x" value="2*x">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valor inicial (x0):</label>
+                            <input type="number" id="new-x0" step="any" value="3">
+                        </div>
+                        <div class="form-group">
+                            <label>Tolerancia:</label>
+                            <input type="number" id="new-tol" step="any" value="0.0001">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Máx. iteraciones:</label>
+                        <input type="number" id="new-maxiter" value="100">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="calcularNewton()">Calcular</button>
+                        <button class="btn btn-secondary-alt" onclick="graficarNewton()">📊 Graficar Función</button>
+                    </div>
+                    <div id="new-chart-container" class="chart-container" style="display:none;">
+                        <div class="chart-toolbar">
+                            <div class="zoom-controls">
+                                <button class="zoom-btn zoom-out" onclick="zoomOutNewton()" title="Alejar (Zoom Out)">➖</button>
+                                <button class="zoom-btn zoom-reset" onclick="resetZoomNewton()" title="Restablecer vista">⟳</button>
+                                <button class="zoom-btn zoom-in" onclick="zoomInNewton()" title="Acercar (Zoom In)">➕</button>
+                            </div>
+                            <span class="zoom-level" id="new-zoom-level">Zoom: 1.00×</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="new-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="resultado" id="new-resultado"></div>
+                </div>
+            </div>
+
+            <div class="calculator-section" id="calc-reglafalsa">
+                <div class="calc-header">
+                    <h3>📊 Regla Falsa</h3>
+                    <p>Busca raíces combinando bisección y secante</p>
+                </div>
+                <div class="calc-body">
+                    <div class="form-group">
+                        <label>Función f(x):</label>
+                        <input type="text" id="rf-funcion" placeholder="Ej: x*exp(x) - 1" value="x*Math.exp(x) - 1">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Límite inferior (a):</label>
+                            <input type="number" id="rf-a" step="any" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Límite superior (b):</label>
+                            <input type="number" id="rf-b" step="any" value="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tolerancia:</label>
+                            <input type="number" id="rf-tol" step="any" value="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label>Máx. iteraciones:</label>
+                            <input type="number" id="rf-maxiter" value="100">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="calcularReglaFalsa()">Calcular</button>
+                        <button class="btn btn-secondary-alt" onclick="graficarReglaFalsa()">📊 Graficar Función</button>
+                    </div>
+                    <div id="rf-chart-container" class="chart-container" style="display:none;">
+                        <div class="chart-toolbar">
+                            <div class="zoom-controls">
+                                <button class="zoom-btn zoom-out" onclick="zoomOutReglaFalsa()" title="Alejar (Zoom Out)">➖</button>
+                                <button class="zoom-btn zoom-reset" onclick="resetZoomReglaFalsa()" title="Restablecer vista">⟳</button>
+                                <button class="zoom-btn zoom-in" onclick="zoomInReglaFalsa()" title="Acercar (Zoom In)">➕</button>
+                            </div>
+                            <span class="zoom-level" id="rf-zoom-level">Zoom: 1.00×</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="rf-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="resultado" id="rf-resultado"></div>
+                </div>
+            </div>
+
+            <div class="calculator-section" id="calc-puntofijo">
+                <div class="calc-header">
+                    <h3>📐 Método de Punto Fijo</h3>
+                    <p>Itera x = g(x) hasta convergencia</p>
+                </div>
+                <div class="calc-body">
+                    <div class="form-group">
+                        <label>Función g(x):</label>
+                        <input type="text" id="pf-g" placeholder="Ej: (x^2 + 2)/3" value="(x^2 + 2)/3">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valor inicial (x0):</label>
+                            <input type="number" id="pf-x0" step="any" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Tolerancia:</label>
+                            <input type="number" id="pf-tol" step="any" value="0.0001">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Máx. iteraciones:</label>
+                        <input type="number" id="pf-maxiter" value="100">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="calcularPuntoFijo()">Calcular</button>
+                        <button class="btn btn-secondary-alt" onclick="graficarPuntoFijo()">📊 Graficar x y g(x)</button>
+                    </div>
+                    <div id="pf-chart-container" class="chart-container" style="display:none;">
+                        <div class="chart-toolbar">
+                            <div class="zoom-controls">
+                                <button class="zoom-btn zoom-out" onclick="zoomOutPuntoFijo()" title="Alejar (Zoom Out)">➖</button>
+                                <button class="zoom-btn zoom-reset" onclick="resetZoomPuntoFijo()" title="Restablecer vista">⟳</button>
+                                <button class="zoom-btn zoom-in" onclick="zoomInPuntoFijo()" title="Acercar (Zoom In)">➕</button>
+                            </div>
+                            <span class="zoom-level" id="pf-zoom-level">Zoom: 1.00×</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="pf-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="resultado" id="pf-resultado"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="acerca" class="about">
+        <div class="container">
+            <h2 class="section-title">Acerca de</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>¿Qué son los Métodos Numéricos?</h3>
+                    <p>Los métodos numéricos son técnicas matemáticas diseñadas para encontrar soluciones aproximadas a problemas que no pueden resolverse exactamente con métodos algebraicos, o cuya solución exacta es impráctica de calcular.</p>
+                    <h3>Historia</h3>
+                    <p>Desde los algoritmos de babilonios para calcular raíces cuadradas, pasando por Newton y Gauss, hasta los computadores modernos, los métodos numéricos han evolucionado hasta convertirse en una herramienta fundamental de la ciencia y la ingeniería.</p>
+                    <h3>Aplicaciones</h3>
+                    <ul>
+                        <li>✅ Ingeniería civil, mecánica, eléctrica</li>
+                        <li>✅ Física y química computacional</li>
+                        <li>✅ Análisis financiero y economía</li>
+                        <li>✅ Inteligencia artificial y machine learning</li>
+                        <li>✅ Procesamiento de imágenes y señales</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>∑ Métodos Numéricos</h3>
+                    <p>Plataforma educativa para aprender y practicar métodos numéricos.</p>
+                </div>
+                <div>
+                    <h4>Métodos</h4>
+                    <ul>
+                        <li><a href="#calc-biseccion">Bisección</a></li>
+                        <li><a href="#calc-newton">Newton-Raphson</a></li>
+                        <li><a href="#calc-reglafalsa">Regla Falsa</a></li>
+                        <li><a href="#calc-puntofijo">Punto Fijo</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Métodos Numéricos. Hecho con ♥ para estudiantes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <button id="backToTop" title="Volver arriba">↑</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
