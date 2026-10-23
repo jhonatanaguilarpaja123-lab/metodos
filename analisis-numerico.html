@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Métodos Numéricos · SPA Didáctica</title>
+
+<!-- Tailwind CSS (CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: { sans: ['Inter', 'system-ui', 'Segoe UI', 'sans-serif'] }
+            }
+        }
+    };
+</script>
+
+<!-- MathJax (CDN) -->
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+<!-- Chart.js (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+    html { scroll-behavior: smooth; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .fade-in { animation: fadeIn .35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .num-input {
+        background: #1e293b; border: 1px solid #334155; border-radius: .45rem;
+        padding: .35rem .5rem; text-align: center; width: 5.25rem;
+        color: #e2e8f0; font-size: .875rem; outline: none; transition: border-color .2s;
+    }
+    .num-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,.12); }
+    table.matriz { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    table.matriz td, table.matriz th {
+        border: 1px solid #334155; padding: .4rem .6rem; text-align: right;
+        font-size: .85rem; min-width: 4.5rem;
+    }
+    table.matriz th { background: #1e293b; color: #7dd3fc; }
+    .nav-btn.active { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; }
+    .nav-btn.active .nav-ico { filter: none; }
+    .brand-watermark {
+        font-weight: 900;
+        letter-spacing: -.06em;
+        background: linear-gradient(135deg, rgba(56,189,248,.10), rgba(167,139,250,.10));
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent; color: transparent;
+    }
+</style>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased">
+
+    <!-- Marca de agua (fondo, tono tenue) -->
+    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none" aria-hidden="true">
+        <div class="brand-watermark absolute -right-6 top-1/2 -translate-y-1/2 text-[20rem] leading-none">4B</div>
+        <div class="brand-watermark absolute left-[22%] bottom-[-3rem] text-[9rem] leading-none hidden xl:block">4 Bytes</div>
+    </div>
+
+    <div class="flex min-h-screen">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside id="sidebar"
+        class="fixed lg:sticky top-0 left-0 z-40 h-screen w-72 shrink-0
+               bg-slate-900/95 backdrop-blur border-r border-slate-800
+               -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="relative grid place-items-center w-11 h-11 rounded-xl bg-gradient-to-br from-sky-400 via-blue-500 to-violet-600 shadow-lg shadow-sky-900/50 ring-1 ring-white/10">
+                    <span class="font-black text-white text-base tracking-tighter leading-none">4B</span>
+                    <span class="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-emerald-400/90"></span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-sky-400 to-violet-400 bg-clip-text text-transparent">4 Bytes</h1>
+                    <p class="text-xs text-slate-500">Métodos Numéricos</p>
+                </div>
+            </div>
+            <button id="closeSidebar" class="lg:hidden text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <nav id="nav" class="p-4 space-y-2 flex-1 overflow-y-auto">
+            <button data-target="method1" class="nav-btn active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                <span class="nav-ico text-lg">🧮</span> 1. Gaussiana (Pivoteo)
+            </button>
+            <button data-target="method2" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                <span class="nav-ico text-lg">🔁</span> 2. Jacobi Iterativo
+            </button>
+            <button data-target="method3" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                <span class="nav-ico text-lg">📐</span> 3. Newton-Raphson 2×2
+            </button>
+            <button data-target="method4" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                <span class="nav-ico text-lg">📈</span> 4. Regresión Polinomial
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500">
+            <span class="font-bold text-slate-400">4 Bytes</span> · Herramienta didáctica · Sin backend
+        </div>
+    </aside>
+
+    <div id="overlay" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden"></div>
+
+    <!-- ===================== MAIN ===================== -->
+    <div class="relative z-10 flex-1 min-w-0 flex flex-col">
+        <!-- top bar (mobile) -->
+        <header class="lg:hidden sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center gap-3">
+            <button id="openSidebar" class="text-2xl text-slate-300">☰</button>
+            <span class="grid place-items-center w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 via-blue-500 to-violet-600 text-white text-[11px] font-black leading-none">4B</span>
+            <span class="font-semibold bg-gradient-to-r from-sky-400 to-violet-400 bg-clip-text text-transparent">4 Bytes · Métodos Numéricos</span>
+        </header>
+
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-6xl w-full mx-auto">
+
+            <!-- ==================================================== -->
+            <!-- MÉTODO 1: ELIMINACIÓN GAUSSIANA CON PIVOTEO PARCIAL  -->
+            <!-- ==================================================== -->
+            <section id="method1" class="method-panel fade-in">
+                <header class="mb-6">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">1. Eliminación Gaussiana con Pivoteo Parcial</h2>
+                    <p class="text-slate-400 mt-2">
+                        Resuelve el sistema $Ax = b$ triangulando la matriz aumentada y aplicando sustitución regresiva.
+                    </p>
+                </header>
+
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 sm:p-6 mb-6">
+                    <div class="flex flex-wrap items-end gap-4 mb-5">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Dimensión (n×n)</label>
+                            <select id="gauss-n" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-sky-400">
+                                <option value="2">2 × 2</option>
+                                <option value="3" selected>3 × 3</option>
+                                <option value="4">4 × 4</option>
+                                <option value="5">5 × 5</option>
+                            </select>
+                        </div>
+                        <button id="gauss-example" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">📋 Cargar Ejemplo</button>
+                        <button id="gauss-run" class="px-5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white shadow-lg shadow-sky-900/40 transition">▶ Resolver</button>
+                    </div>
+
+                    <div id="gauss-inputs" class="space-y-4"></div>
+                    <p class="text-xs text-slate-500 mt-4">La matriz aumentada es $[A \mid b]$.</p>
+                </div>
+
+                <div id="gauss-out" class="space-y-4"></div>
+            </section>
+
+            <!-- ==================================================== -->
+            <!-- MÉTODO 2: JACOBI                                     -->
+            <!-- ==================================================== -->
+            <section id="method2" class="method-panel hidden fade-in">
+                <header class="mb-6">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">2. Método Iterativo de Jacobi</h2>
+                    <p class="text-slate-400 mt-2">
+                        Aproxima la solución iterando $x_i^{(k+1)} = \dfrac{1}{a_{ii}}\left(b_i - \sum_{j \neq i} a_{ij}\,x_j^{(k)}\right)$.
+                    </p>
+                </header>
+
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 sm:p-6 mb-6">
+                    <div class="flex flex-wrap items-end gap-4 mb-5">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Dimensión (n×n)</label>
+                            <select id="jacobi-n" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-sky-400">
+                                <option value="2">2 × 2</option>
+                                <option value="3" selected>3 × 3</option>
+                                <option value="4">4 × 4</option>
+                            </select>
+                        </div>
+                        <button id="jacobi-example" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">📋 Cargar Ejemplo</button>
+                        <button id="jacobi-run" class="px-5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white shadow-lg shadow-sky-900/40 transition">▶ Iterar</button>
+                    </div>
+
+                    <div id="jacobi-inputs" class="space-y-5"></div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 pt-5 border-t border-slate-800">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Tolerancia $\varepsilon$</label>
+                            <input id="jacobi-tol" type="number" step="any" value="0.001" class="num-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Máx. iteraciones</label>
+                            <input id="jacobi-max" type="number" value="100" class="num-input w-full">
+                        </div>
+                        <div class="flex items-end">
+                            <button id="jacobi-edd" class="w-full px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">🔍 Verificar E.D.D.</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="jacobi-out" class="space-y-4"></div>
+            </section>
+
+            <!-- ==================================================== -->
+            <!-- MÉTODO 3: NEWTON-RAPHSON 2x2                         -->
+            <!-- ==================================================== -->
+            <section id="method3" class="method-panel hidden fade-in">
+                <header class="mb-6">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">3. Newton-Raphson para Sistemas No Lineales (2×2)</h2>
+                    <p class="text-slate-400 mt-2">
+                        Resuelve $F(x,y) = 0$ mediante $X^{(k+1)} = X^{(k)} - J^{-1}(X^{(k)})\,F(X^{(k)})$.
+                    </p>
+                </header>
+
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 sm:p-6 mb-6">
+                    <div class="flex flex-wrap gap-3 mb-5">
+                        <button id="newton-example" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">📋 Cargar Ejemplo</button>
+                        <button id="newton-run" class="px-5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white shadow-lg shadow-sky-900/40 transition">▶ Resolver</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">$f_1(x,y) = 0$</label>
+                            <input id="newton-f1" type="text" value="x^2 + y^2 - 4" class="num-input w-full !text-left">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">$f_2(x,y) = 0$</label>
+                            <input id="newton-f2" type="text" value="x^3 - y" class="num-input w-full !text-left">
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-500 mt-2">
+                        Sintaxis: <code class="bg-slate-800 px-1 rounded">^</code> potencia, funciones <code class="bg-slate-800 px-1 rounded">sin()</code>,
+                        <code class="bg-slate-800 px-1 rounded">cos()</code>, <code class="bg-slate-800 px-1 rounded">exp()</code>,
+                        <code class="bg-slate-800 px-1 rounded">log()</code>, <code class="bg-slate-800 px-1 rounded">sqrt()</code>.
+                        La Jacobiana se calcula por diferencias finitas.
+                    </p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-slate-800">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">$x_0$</label>
+                            <input id="newton-x0" type="number" step="any" value="1" class="num-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">$y_0$</label>
+                            <input id="newton-y0" type="number" step="any" value="1" class="num-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Tolerancia</label>
+                            <input id="newton-tol" type="number" step="any" value="0.0001" class="num-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Máx. iteraciones</label>
+                            <input id="newton-max" type="number" value="50" class="num-input w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="newton-out" class="space-y-4"></div>
+            </section>
+
+            <!-- ==================================================== -->
+            <!-- MÉTODO 4: REGRESIÓN POLINOMIAL GRADO 2              -->
+            <!-- ==================================================== -->
+            <section id="method4" class="method-panel hidden fade-in">
+                <header class="mb-6">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">4. Regresión Polinomial de Grado 2 (Mínimos Cuadrados)</h2>
+                    <p class="text-slate-400 mt-2">
+                        Ajusta $y = a_0 + a_1 x + a_2 x^2$ a un conjunto de datos mediante las ecuaciones normales.
+                    </p>
+                </header>
+
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 sm:p-6 mb-6">
+                    <div class="flex flex-wrap gap-3 mb-4">
+                        <button id="reg-add" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">➕ Añadir punto</button>
+                        <button id="reg-example" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">📋 Cargar Ejemplo</button>
+                        <button id="reg-run" class="px-5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white shadow-lg shadow-sky-900/40 transition">▶ Ajustar</button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-slate-400 text-left">
+                                    <th class="py-2 pr-3 font-medium">#</th>
+                                    <th class="py-2 pr-3 font-medium">$x_i$</th>
+                                    <th class="py-2 pr-3 font-medium">$y_i$</th>
+                                    <th class="py-2 font-medium"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="reg-points"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="reg-out" class="space-y-4"></div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<script type="module">
+/* ============================================================================
+   UTILIDADES GENERALES
+   ============================================================================ */
+
+/** Formatea números: enteros limpios, decimales fijos o notación científica. */
+function fmt(v, dec = 6) {
+    if (v === null || v === undefined) return '—';
+    if (typeof v !== 'number') return String(v);
+    if (!isFinite(v)) return Number.isNaN(v) ? 'NaN' : (v > 0 ? '∞' : '−∞');
+    if (v === 0) return '0';
+    const a = Math.abs(v);
+    if (a < 1e-4 || a >= 1e7) return v.toExponential(4);
+    const r = Number(v.toFixed(dec));
+    return String(r);
+}
+
+/** Se lanza cuando hay un error de validación del usuario. */
+class ValidationError extends Error {}
+
+/** Re-renderiza MathJax cuando hay contenido nuevo. */
+function typeset() {
+    if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(() => {});
+    }
+}
+
+/** Muestra un bloque de error dentro del contenedor indicado. */
+function showError(container, message) {
+    container.innerHTML = `
+        <div class="fade-in bg-red-950/40 border border-red-800 text-red-300 rounded-2xl p-4">
+            <p class="font-semibold mb-1">❌ Error</p>
+            <p class="text-sm">${message}</p>
+        </div>`;
+}
+
+/** Construye una tabla HTML a partir de encabezados y filas. */
+function tabla(headers, rows, cls = '') {
+    const head = headers.map(h => `<th>${h}</th>`).join('');
+    const body = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+    return `<div class="overflow-x-auto rounded-xl border border-slate-800 ${cls}">
+        <table class="matriz w-full">${head ? `<thead><tr>${head}</tr></thead>` : ''}<tbody>${body}</tbody></table>
+    </div>`;
+}
+
+/** Tarjeta contenedora de resultados. */
+function card(title, inner) {
+    return `<div class="fade-in bg-slate-900 rounded-2xl border border-slate-800 p-5 sm:p-6">
+        ${title ? `<h3 class="text-lg font-semibold text-sky-300 mb-4">${title}</h3>` : ''}
+        <div class="space-y-4">${inner}</div>
+    </div>`;
+}
+
+/** Resuelve un sistema cuadrado denso con eliminación gaussiana (para uso interno). */
+function resolverSistema(A, b) {
+    const n = A.length;
+    const M = A.map((row, i) => [...row, b[i]]);
+    for (let k = 0; k < n; k++) {
+        let max = k;
+        for (let i = k + 1; i < n; i++) if (Math.abs(M[i][k]) > Math.abs(M[max][k])) max = i;
+        if (Math.abs(M[max][k]) < 1e-14) throw new ValidationError('Sistema singular: la matriz no tiene solución única.');
+        [M[k], M[max]] = [M[max], M[k]];
+        for (let i = k + 1; i < n; i++) {
+            const f = M[i][k] / M[k][k];
+            for (let j = k; j <= n; j++) M[i][j] -= f * M[k][j];
+        }
+    }
+    const x = new Array(n).fill(0);
+    for (let i = n - 1; i >= 0; i--) {
+        let s = M[i][n];
+        for (let j = i + 1; j < n; j++) s -= M[i][j] * x[j];
+        x[i] = s / M[i][i];
+    }
+    return x;
+}
+
+/* ============================================================================
+   NAVEGACIÓN (tabs / sidebar)
+   ============================================================================ */
+const navButtons = document.querySelectorAll('.nav-btn');
+const panels = document.querySelectorAll('.method-panel');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+
+function activar(id) {
+    panels.forEach(p => p.classList.toggle('hidden', p.id !== id));
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+    cerrarSidebar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    typeset();
+}
+function cerrarSidebar() { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); }
+function abrirSidebar() { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); }
+
+navButtons.forEach(b => b.addEventListener('click', () => activar(b.dataset.target)));
+document.getElementById('openSidebar').addEventListener('click', abrirSidebar);
+document.getElementById('closeSidebar').addEventListener('click', cerrarSidebar);
+overlay.addEventListener('click', cerrarSidebar);
+
+/* ============================================================================
+   CONSTRUCCIÓN DINÁMICA DE INPUTS DE MATRIZ
+   ============================================================================ */
+function renderMatrizInputs(contA, contB, n, A = null, b = null, prefix = '') {
+    let html = `<div class="flex flex-wrap items-center gap-4">
+        <div><p class="text-sm text-slate-400 mb-2">Matriz $A$</p><div class="inline-block space-y-1.5">`;
+    for (let i = 0; i < n; i++) {
+        html += '<div class="flex gap-1.5">';
+        for (let j = 0; j < n; j++) {
+            const val = A && A[i] && A[i][j] !== undefined ? A[i][j] : 0;
+            html += `<input type="number" step="any" value="${val}" data-m="${prefix}A" data-i="${i}" data-j="${j}" class="num-input">`;
+        }
+        html += '</div>';
+    }
+    html += `</div></div><div><p class="text-sm text-slate-400 mb-2">Vector $b$</p><div class="space-y-1.5">`;
+    for (let i = 0; i < n; i++) {
+        const val = b && b[i] !== undefined ? b[i] : 0;
+        html += `<div><input type="number" step="any" value="${val}" data-m="${prefix}b" data-i="${i}" class="num-input"></div>`;
+    }
+    html += '</div></div></div>';
+    contA.innerHTML = html;
+}
+
+/** Lee de un contenedor la matriz A y vector b según la dimensión n. */
+function leerMatriz(container, n) {
+    const A = Array.from({ length: n }, () => new Array(n).fill(0));
+    const b = new Array(n).fill(0);
+    container.querySelectorAll('input[data-m]').forEach(inp => {
+        const v = parseFloat(inp.value);
+        const i = parseInt(inp.dataset.i);
+        const j = inp.dataset.j !== undefined ? parseInt(inp.dataset.j) : null;
+        if (inp.dataset.m.endsWith('A')) A[i][j] = isNaN(v) ? NaN : v;
+        else b[i] = isNaN(v) ? NaN : v;
+    });
+    return { A, b };
+}
+
+/* ============================================================================
+   MÉTODO 1 · ELIMINACIÓN GAUSSIANA CON PIVOTEO PARCIAL
+   ============================================================================ */
+const gaussN = document.getElementById('gauss-n');
+const gaussInputs = document.getElementById('gauss-inputs');
+const gaussOut = document.getElementById('gauss-out');
+
+function renderGauss(n = parseInt(gaussN.value), A = null, b = null) {
+    renderMatrizInputs(gaussInputs, gaussInputs, n, A, b, 'gauss');
+}
+gaussN.addEventListener('change', () => renderGauss(parseInt(gaussN.value)));
+renderGauss(3, [[3, -0.1, -0.2], [0.1, 7, -0.3], [0.3, -0.2, 10]], [7.85, -19.3, 71.4]);
+
+document.getElementById('gauss-example').addEventListener('click', () => {
+    gaussN.value = '3';
+    renderGauss(3, [[3, -0.1, -0.2], [0.1, 7, -0.3], [0.3, -0.2, 10]], [7.85, -19.3, 71.4]);
+    gaussOut.innerHTML = '';
+    typeset();
+});
+
+/** Muestra la matriz aumentada como tabla HTML. */
+function tablaMatriz(M, n, resaltarCol = -1) {
+    let head = '';
+    for (let j = 0; j < n; j++) head += `<th>x<sub>${j + 1}</sub></th>`;
+    head += '<th class="!bg-violet-900/60 !text-violet-200">b</th>';
+
+    let body = '';
+    for (let i = 0; i < n; i++) {
+        body += '<tr>';
+        for (let j = 0; j <= n; j++) {
+            const isB = j === n;
+            const hl = (!isB && j === resaltarCol) ? 'bg-sky-950/70 text-sky-200 font-semibold' : '';
+            body += `<td class="${hl} ${isB ? 'text-violet-300' : ''}">${fmt(M[i][j], 6)}</td>`;
+        }
+        body += '</tr>';
+    }
+    return `<div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="matriz"><thead><tr><th class="!text-left">Fila</th>${head}</tr></thead>
+        <tbody>${body.replace(/<tr>/g, () => '<tr><td class="!text-slate-500 !text-left">·</td>')}</tbody></table>`;
+}
+
+document.getElementById('gauss-run').addEventListener('click', () => {
+    try {
+        const n = parseInt(gaussN.value);
+        const { A, b } = leerMatriz(gaussInputs, n);
+        // Validaciones
+        for (let i = 0; i < n; i++) for (let j = 0; j < n; j++)
+            if (isNaN(A[i][j])) throw new ValidationError('Todos los coeficientes de A deben ser numéricos.');
+        for (let i = 0; i < n; i++)
+            if (isNaN(b[i])) throw new ValidationError('Todos los valores de b deben ser numéricos.');
+
+        const M = A.map((row, i) => [...row, b[i]]);
+        const pasos = [];
+
+        for (let k = 0; k < n; k++) {
+            // 1) Pivoteo parcial
+            let piv = k;
+            for (let i = k + 1; i < n; i++)
+                if (Math.abs(M[i][k]) > Math.abs(M[piv][k])) piv = i;
+
+            const msgPivote = piv === k
+                ? `No requiere intercambio (pivote $a_{${k + 1}${k + 1}} = ${fmt(M[k][k], 6)}$ ya es el mayor).`
+                : `Se intercambian $F_{${k + 1}} \\leftrightarrow F_{${piv + 1}}$ por ser $|a_{${piv + 1}${k + 1}}|$ el mayor.`;
+
+            if (Math.abs(M[piv][k]) < 1e-14)
+                throw new ValidationError(`Pivote nulo en la columna ${k + 1}: el sistema puede ser singular.`);
+
+            if (piv !== k) [M[k], M[piv]] = [M[piv], M[k]];
+
+            const antes = M.map(r => [...r]);
+            const snapPivote = { tipo: 'pivoteo', col: k, msg: msgPivote, matriz: antes };
+
+            // 2) Eliminación hacia adelante
+            const factores = [];
+            for (let i = k + 1; i < n; i++) {
+                const f = M[i][k] / M[k][k];
+                factores.push({ i, f });
+                for (let j = k; j <= n; j++) M[i][j] -= f * M[k][j];
+                M[i][k] = 0;
+            }
+            const msgElim = factores.length
+                ? 'Eliminación: ' + factores.map(x => `$F_{${x.i + 1}} \\to F_{${x.i + 1}} ${x.f < 0 ? '+' : '-'} (${fmt(Math.abs(x.f), 6)})\\,F_{${k + 1}}$`).join(', ')
+                : 'No hay filas por debajo para eliminar.';
+
+            pasos.push(snapPivote);
+            pasos.push({ tipo: 'eliminacion', col: k, msg: msgElim, matriz: M.map(r => [...r]) });
+        }
+
+        // 3) Sustitución regresiva
+        const x = new Array(n).fill(0);
+        const sust = [];
+        for (let i = n - 1; i >= 0; i--) {
+            let s = M[i][n];
+            const terminos = [];
+            for (let j = i + 1; j < n; j++) { s -= M[i][j] * x[j]; terminos.push(`(${fmt(M[i][j], 6)})(${fmt(x[j], 6)})`); }
+            x[i] = s / M[i][i];
+            const expr = terminos.length
+                ? `$x_{${i + 1}} = \\dfrac{${fmt(M[i][n], 6)} - ${terminos.join(' - ')}}{${fmt(M[i][i], 6)}} = ${fmt(x[i], 6)}$`
+                : `$x_{${i + 1}} = \\dfrac{${fmt(M[i][n], 6)}}{${fmt(M[i][i], 6)}} = ${fmt(x[i], 6)}$`;
+            sust.push(expr);
+        }
+
+        // Render
+        let html = card('🔎 Proceso de triangulación', pasos.map((p, idx) => `
+            <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800">
+                <p class="text-sm mb-3">
+                    <span class="inline-block text-xs font-bold px-2 py-0.5 rounded bg-slate-800 text-sky-300 mr-2">
+                        ${p.tipo === 'pivoteo' ? 'PIVOTEO' : 'ELIMINACIÓN'} · col ${p.col + 1}
+                    </span>${p.msg}
+                </p>
+                ${tablaMatriz(p.matriz, n, p.tipo === 'pivoteo' ? p.col : -1)}
+            </div>`).join(''));
+
+        html += card('🎯 Sustitución regresiva', `<div class="space-y-2 text-slate-200">${sust.map(s => `<p>${s}</p>`).join('')}</div>`);
+
+        html += card('✅ Solución final', `
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                ${x.map((v, i) => `<div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 text-center">
+                    <p class="text-xs text-slate-500">$x_{${i + 1}}$</p>
+                    <p class="text-lg font-bold text-emerald-300">${fmt(v, 6)}</p></div>`).join('')}
+            </div>
+            <p class="text-sm text-slate-400 mt-3">$x = \\left[${x.map(v => fmt(v, 6)).join(',\\; ')}\\right]^{T}$</p>`);
+
+        gaussOut.innerHTML = html;
+        typeset();
+    } catch (e) {
+        showError(gaussOut, e instanceof ValidationError ? e.message : `Fallo inesperado: ${e.message}`);
+    }
+});
+
+/* ============================================================================
+   MÉTODO 2 · JACOBI
+   ============================================================================ */
+const jacobiN = document.getElementById('jacobi-n');
+const jacobiInputs = document.getElementById('jacobi-inputs');
+const jacobiOut = document.getElementById('jacobi-out');
+const jacobiTol = document.getElementById('jacobi-tol');
+const jacobiMax = document.getElementById('jacobi-max');
+
+let jacobiX0 = [0, 0, 0];
+
+function renderJacobi(n = parseInt(jacobiN.value), A = null, b = null, X0 = null) {
+    renderMatrizInputs(jacobiInputs, jacobiInputs, n, A, b, 'jacobi');
+    if (X0) jacobiX0 = [...X0];
+    if (jacobiX0.length !== n) jacobiX0 = new Array(n).fill(0);
+
+    let html = `<div><p class="text-sm text-slate-400 mb-2">Aproximación inicial $X^{(0)}$</p><div class="flex flex-wrap gap-1.5">`;
+    for (let i = 0; i < n; i++) {
+        html += `<input type="number" step="any" value="${jacobiX0[i]}" data-x0="${i}" class="num-input">`;
+    }
+    html += '</div></div>';
+    jacobiInputs.insertAdjacentHTML('beforeend', html);
+}
+jacobiN.addEventListener('change', () => renderJacobi(parseInt(jacobiN.value)));
+renderJacobi(3, [[10, -1, 2], [-1, 11, -1], [2, -1, 10]], [6, 25, -11], [0, 0, 0]);
+
+document.getElementById('jacobi-example').addEventListener('click', () => {
+    jacobiN.value = '3';
+    jacobiTol.value = '0.001';
+    jacobiMax.value = '100';
+    renderJacobi(3, [[10, -1, 2], [-1, 11, -1], [2, -1, 10]], [6, 25, -11], [0, 0, 0]);
+    jacobiOut.innerHTML = '';
+    typeset();
+});
+
+/** Verifica si A es estrictamente diagonal dominante. */
+function esEDD(A) {
+    const n = A.length;
+    const detalles = [];
+    let es = true;
+    for (let i = 0; i < n; i++) {
+        const diag = Math.abs(A[i][i]);
+        let suma = 0;
+        for (let j = 0; j < n; j++) if (j !== i) suma += Math.abs(A[i][j]);
+        const cumple = diag > suma;
+        if (!cumple) es = false;
+        detalles.push({ i, diag, suma, cumple });
+    }
+    return { es, detalles };
+}
+
+function leerX0(container, n) {
+    const X0 = new Array(n).fill(0);
+    container.querySelectorAll('input[data-x0]').forEach(inp => {
+        const i = parseInt(inp.dataset.x0);
+        const v = parseFloat(inp.value);
+        X0[i] = isNaN(v) ? 0 : v;
+    });
+    return X0;
+}
+
+document.getElementById('jacobi-edd').addEventListener('click', () => {
+    try {
+        const n = parseInt(jacobiN.value);
+        const { A } = leerMatriz(jacobiInputs, n);
+        for (let i = 0; i < n; i++) for (let j = 0; j < n; j++)
+            if (isNaN(A[i][j])) throw new ValidationError('Todos los coeficientes de A deben ser numéricos.');
+
+        const { es, detalles } = esEDD(A);
+        const filas = detalles.map(d => [
+            `Fila ${d.i + 1}`,
+            `$|a_{${d.i + 1}${d.i + 1}}| = ${fmt(d.diag, 6)}$`,
+            `$\\sum_{j \\neq ${d.i + 1}} |a_{${d.i + 1}j}| = ${fmt(d.suma, 6)}$`,
+            d.cumple ? '<span class="text-emerald-400">✔ Cumple</span>' : '<span class="text-red-400">✘ No cumple</span>'
+        ]);
+
+        jacobiOut.innerHTML = card('🔍 Verificación de Matriz Estrictamente Diagonal Dominante', `
+            ${tabla(['Fila', 'Diagonal', 'Suma off-diagonal', 'Resultado'], filas)}
+            <div class="${es ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : 'bg-amber-950/40 border-amber-800 text-amber-300'} border rounded-xl p-4 text-sm">
+                ${es
+                    ? 'La matriz <b>es</b> estrictamente diagonal dominante → la iteración de Jacobi <b>converge</b> con cualquier $X^{(0)}$.'
+                    : 'La matriz <b>no</b> es estrictamente diagonal dominante → Jacobi <b>podría no converger</b>. Se recomienda reordenar las ecuaciones.'}
+            </div>`);
+        typeset();
+    } catch (e) {
+        showError(jacobiOut, e instanceof ValidationError ? e.message : `Fallo inesperado: ${e.message}`);
+    }
+});
+
+document.getElementById('jacobi-run').addEventListener('click', () => {
+    try {
+        const n = parseInt(jacobiN.value);
+        const { A, b } = leerMatriz(jacobiInputs, n);
+        const X0 = leerX0(jacobiInputs, n);
+        const tol = parseFloat(jacobiTol.value);
+        const maxIter = parseInt(jacobiMax.value);
+
+        if (isNaN(tol) || tol <= 0) throw new ValidationError('La tolerancia debe ser un número positivo.');
+        if (isNaN(maxIter) || maxIter < 1) throw new ValidationError('El máximo de iteraciones debe ser un entero ≥ 1.');
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) if (isNaN(A[i][j])) throw new ValidationError('Todos los coeficientes de A deben ser numéricos.');
+            if (isNaN(b[i])) throw new ValidationError('Todos los valores de b deben ser numéricos.');
+            if (Math.abs(A[i][i]) < 1e-14) throw new ValidationError(`Elemento diagonal a[${i + 1}][${i + 1}] = 0: Jacobi no puede aplicarse sin reordenar.`);
+        }
+
+        const { es, detalles } = esEDD(A);
+        const filas = [];
+        let x = [...X0];
+        let convergio = false;
+        let err = 0;
+
+        for (let k = 1; k <= maxIter; k++) {
+            const xn = new Array(n).fill(0);
+            for (let i = 0; i < n; i++) {
+                let s = b[i];
+                for (let j = 0; j < n; j++) if (j !== i) s -= A[i][j] * x[j];
+                xn[i] = s / A[i][i];
+            }
+            err = Math.max(...xn.map((v, i) => Math.abs(v - x[i])));
+            filas.push([k, ...xn.map(v => fmt(v, 6)), fmt(err, 6)]);
+            x = xn;
+            if (err < tol) { convergio = true; break; }
+        }
+
+        const headers = ['k', ...Array.from({ length: n }, (_, i) => `$x_{${i + 1}}^{(k)}$`), '$\\|X^{(k)}-X^{(k-1)}\\|_\\infty$'];
+
+        let html = '';
+        if (es) {
+            html += `<div class="bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-2xl p-4 text-sm">
+                ✔ Matriz E.D.D. verificada → convergencia garantizada.</div>`;
+        } else {
+            html += `<div class="bg-amber-950/40 border border-amber-800 text-amber-300 rounded-2xl p-4 text-sm">
+                ⚠ Matriz no E.D.D. → la convergencia no está garantizada.
+                ${detalles.filter(d => !d.cumple).map(d => `Fila ${d.i + 1}: |a| = ${fmt(d.diag, 4)} ≤ ${fmt(d.suma, 4)}`).join(' · ')}</div>`;
+        }
+
+        html += card('📊 Tabla de iteraciones', tabla(headers, filas));
+        html += card(convergio ? '✅ Convergencia alcanzada' : '⏱ Límite de iteraciones alcanzado', `
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                ${x.map((v, i) => `<div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 text-center">
+                    <p class="text-xs text-slate-500">$x_{${i + 1}}$</p>
+                    <p class="text-lg font-bold ${convergio ? 'text-emerald-300' : 'text-amber-300'}">${fmt(v, 6)}</p></div>`).join('')}
+            </div>
+            <p class="text-sm text-slate-400">Iteraciones realizadas: <b>${filas.length}</b> · Error final: <b>${fmt(err, 8)}</b> · Tolerancia: ${fmt(tol, 8)}</p>`);
+
+        jacobiOut.innerHTML = html;
+        typeset();
+    } catch (e) {
+        showError(jacobiOut, e instanceof ValidationError ? e.message : `Fallo inesperado: ${e.message}`);
+    }
+});
+
+/* ============================================================================
+   MÉTODO 3 · NEWTON-RAPHSON 2x2
+   ============================================================================ */
+const newtonOut = document.getElementById('newton-out');
+
+/**
+ * Compila una expresión en (x, y) a una función JS.
+ * Nota: los módulos ES son estricto → no se puede usar `with`; se desestructura Math.
+ */
+function compilar(fx) {
+    let formula = fx.replace(/\^/g, '**');
+    formula = formula.replace(/(\d)([a-zA-Z(])/g, '$1*$2');   // 2x -> 2*x , 2( -> 2*(
+    formula = formula.replace(/(\))(\d|[a-zA-Z(])/g, '$1*$2'); // )2 -> )*2 , )x -> )*x
+    formula = formula.replace(/([xy])(\()/g, '$1*$2');         // x( -> x*(
+
+    const cuerpo = `
+        const {sin,cos,tan,asin,acos,atan,atan2,exp,log,log10,log2,sqrt,cbrt,abs,pow,sign,floor,ceil,round,min,max,sinh,cosh,tanh,PI,E} = Math;
+        return (${formula});
+    `;
+    let fn;
+    try {
+        fn = new Function('x', 'y', cuerpo);
+    } catch (e) {
+        throw new ValidationError(`Sintaxis inválida en "${fx}".`);
+    }
+    return (x, y) => {
+        const v = fn(x, y);
+        if (typeof v !== 'number' || !isFinite(v)) throw new ValidationError(`La expresión "${fx}" produjo un valor no finito en (${x}, ${y}).`);
+        return v;
+    };
+}
+
+document.getElementById('newton-example').addEventListener('click', () => {
+    document.getElementById('newton-f1').value = 'x^2 + y^2 - 4';
+    document.getElementById('newton-f2').value = 'x^3 - y';
+    document.getElementById('newton-x0').value = '1';
+    document.getElementById('newton-y0').value = '1';
+    document.getElementById('newton-tol').value = '0.0001';
+    document.getElementById('newton-max').value = '50';
+    newtonOut.innerHTML = '';
+});
+
+document.getElementById('newton-run').addEventListener('click', () => {
+    try {
+        const f1 = compilar(document.getElementById('newton-f1').value.trim());
+        const f2 = compilar(document.getElementById('newton-f2').value.trim());
+        let x = parseFloat(document.getElementById('newton-x0').value);
+        let y = parseFloat(document.getElementById('newton-y0').value);
+        const tol = parseFloat(document.getElementById('newton-tol').value);
+        const maxIter = parseInt(document.getElementById('newton-max').value);
+
+        if (isNaN(x) || isNaN(y)) throw new ValidationError('El punto inicial (x₀, y₀) debe ser numérico.');
+        if (isNaN(tol) || tol <= 0) throw new ValidationError('La tolerancia debe ser un número positivo.');
+        if (isNaN(maxIter) || maxIter < 1) throw new ValidationError('El máximo de iteraciones debe ser ≥ 1.');
+
+        const h = 1e-6;
+        const filas = [];
+        let convergio = false, err = 0, det = 0, F = [0, 0];
+
+        for (let k = 1; k <= maxIter; k++) {
+            F = [f1(x, y), f2(x, y)];
+            const J11 = (f1(x + h, y) - f1(x - h, y)) / (2 * h);
+            const J12 = (f1(x, y + h) - f1(x, y - h)) / (2 * h);
+            const J21 = (f2(x + h, y) - f2(x - h, y)) / (2 * h);
+            const J22 = (f2(x, y + h) - f2(x, y - h)) / (2 * h);
+
+            det = J11 * J22 - J12 * J21;
+            if (Math.abs(det) < 1e-14) throw new ValidationError(`Jacobiano singular (det ≈ 0) en la iteración ${k}. Prueba otro punto inicial.`);
+
+            const dx = (-F[0] * J22 + F[1] * J12) / det;
+            const dy = (-J11 * F[1] + J21 * F[0]) / det;
+            const xN = x + dx, yN = y + dy;
+            err = Math.max(Math.abs(xN - x), Math.abs(yN - y));
+
+            filas.push([
+                k,
+                `(${fmt(x, 6)}, ${fmt(y, 6)})`,
+                fmt(det, 6),
+                `(${fmt(F[0], 6)}, ${fmt(F[1], 6)})`,
+                `(${fmt(xN, 6)}, ${fmt(yN, 6)})`,
+                fmt(err, 6)
+            ]);
+
+            x = xN; y = yN;
+            if (err < tol) { convergio = true; break; }
+        }
+
+        const Ffinal = [f1(x, y), f2(x, y)];
+        const j11 = (f1(x + h, y) - f1(x - h, y)) / (2 * h);
+        const j12 = (f1(x, y + h) - f1(x, y - h)) / (2 * h);
+        const j21 = (f2(x + h, y) - f2(x - h, y)) / (2 * h);
+        const j22 = (f2(x, y + h) - f2(x, y - h)) / (2 * h);
+
+        const html = card('📊 Tabla de iteraciones',
+            tabla(['k', '$(x^{(k)}, y^{(k)})$', '$\\det J$', '$F(x,y)$', '$(x^{(k+1)}, y^{(k+1)})$', 'Error abs.'], filas)
+        ) + card(convergio ? '✅ Solución convergente' : '⏱ Límite de iteraciones alcanzado', `
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 text-center">
+                    <p class="text-xs text-slate-500">$x$</p>
+                    <p class="text-lg font-bold ${convergio ? 'text-emerald-300' : 'text-amber-300'}">${fmt(x, 6)}</p>
+                </div>
+                <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 text-center">
+                    <p class="text-xs text-slate-500">$y$</p>
+                    <p class="text-lg font-bold ${convergio ? 'text-emerald-300' : 'text-amber-300'}">${fmt(y, 6)}</p>
+                </div>
+                <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 text-center">
+                    <p class="text-xs text-slate-500">$\\|F(x,y)\\|$</p>
+                    <p class="text-lg font-bold text-sky-300">${fmt(Math.hypot(Ffinal[0], Ffinal[1]), 6)}</p>
+                </div>
+            </div>
+            <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 text-sm space-y-1">
+                <p class="text-slate-400">Jacobiana final $J(x,y)$:</p>
+                <p>$J = \\begin{bmatrix} ${fmt(j11, 6)} & ${fmt(j12, 6)} \\\\ ${fmt(j21, 6)} & ${fmt(j22, 6)} \\end{bmatrix}$</p>
+            </div>
+            <p class="text-sm text-slate-400">Iteraciones: <b>${filas.length}</b> · Error final: <b>${fmt(err, 8)}</b></p>`);
+
+        newtonOut.innerHTML = html;
+        typeset();
+    } catch (e) {
+        showError(newtonOut, e instanceof ValidationError ? e.message : `Fallo inesperado: ${e.message}`);
+    }
+});
+
+/* ============================================================================
+   MÉTODO 4 · REGRESIÓN POLINOMIAL GRADO 2
+   ============================================================================ */
+const regPoints = document.getElementById('reg-points');
+const regOut = document.getElementById('reg-out');
+let regChart = null;
+
+function filaPunto(x = '', y = '') {
+    const tr = document.createElement('tr');
+    tr.className = 'border-t border-slate-800';
+    tr.innerHTML = `
+        <td class="py-2 pr-3 text-slate-500 idx"></td>
+        <td class="py-2 pr-3"><input type="number" step="any" value="${x}" data-p="x" class="num-input"></td>
+        <td class="py-2 pr-3"><input type="number" step="any" value="${y}" data-p="y" class="num-input"></td>
+        <td class="py-2"><button class="btn-del text-red-400 hover:text-red-300 text-lg" title="Eliminar">✕</button></td>`;
+    tr.querySelector('.btn-del').addEventListener('click', () => { tr.remove(); reindexar(); });
+    return tr;
+}
+function reindexar() {
+    [...regPoints.children].forEach((tr, i) => tr.querySelector('.idx').textContent = i + 1);
+}
+function setPuntos(puntos) {
+    regPoints.innerHTML = '';
+    puntos.forEach(([x, y]) => regPoints.appendChild(filaPunto(x, y)));
+    reindexar();
+}
+document.getElementById('reg-add').addEventListener('click', () => { regPoints.appendChild(filaPunto()); reindexar(); });
+document.getElementById('reg-example').addEventListener('click', () => {
+    setPuntos([[1, 7.7], [2, 13.6], [3, 27.2], [4, 40.9], [5, 61.1]]);
+    regOut.innerHTML = '';
+});
+setPuntos([[1, 7.7], [2, 13.6], [3, 27.2], [4, 40.9], [5, 61.1]]);
+
+/** Convierte el vector de coeficientes [a0, a1, a2] a cadena LaTeX. */
+function polyToLatex(a) {
+    let out = '';
+    for (let i = a.length - 1; i >= 0; i--) {
+        const c = a[i];
+        if (Math.abs(c) < 1e-12) continue;
+        const neg = c < 0;
+        const ac = Math.abs(c);
+        const coef = (i > 0 && Math.abs(ac - 1) < 1e-12) ? '' : fmt(ac, 6);
+        const varPart = i === 0 ? '' : (i === 1 ? 'x' : `x^{${i}}`);
+        if (out === '') out = (neg ? '-' : '') + coef + varPart;
+        else out += (neg ? ' - ' : ' + ') + coef + varPart;
+    }
+    return out || '0';
+}
+
+document.getElementById('reg-run').addEventListener('click', () => {
+    try {
+        const xs = [], ys = [];
+        regPoints.querySelectorAll('tr').forEach(tr => {
+            const xi = parseFloat(tr.querySelector('[data-p="x"]').value);
+            const yi = parseFloat(tr.querySelector('[data-p="y"]').value);
+            if (!isNaN(xi) && !isNaN(yi)) { xs.push(xi); ys.push(yi); }
+        });
+
+        const n = xs.length;
+        if (n < 3) throw new ValidationError('Se necesitan al menos 3 puntos para ajustar un polinomio de grado 2.');
+
+        // Sumatorias
+        let Sx = 0, Sx2 = 0, Sx3 = 0, Sx4 = 0, Sy = 0, Sxy = 0, Sx2y = 0;
+        for (let i = 0; i < n; i++) {
+            const x = xs[i], y = ys[i];
+            Sx += x; Sx2 += x * x; Sx3 += x ** 3; Sx4 += x ** 4;
+            Sy += y; Sxy += x * y; Sx2y += x * x * y;
+        }
+
+        const sumRows = [
+            ['$\\sum x_i$', fmt(Sx, 6)],
+            ['$\\sum x_i^2$', fmt(Sx2, 6)],
+            ['$\\sum x_i^3$', fmt(Sx3, 6)],
+            ['$\\sum x_i^4$', fmt(Sx4, 6)],
+            ['$\\sum y_i$', fmt(Sy, 6)],
+            ['$\\sum x_i y_i$', fmt(Sxy, 6)],
+            ['$\\sum x_i^2 y_i$', fmt(Sx2y, 6)],
+        ];
+
+        // Ecuaciones normales
+        const A = [
+            [n, Sx, Sx2],
+            [Sx, Sx2, Sx3],
+            [Sx2, Sx3, Sx4],
+        ];
+        const bb = [Sy, Sxy, Sx2y];
+
+        if (Math.abs(A[0][0]) < 1e-14) throw new ValidationError('Datos insuficientes o degenerados.');
+        const coef = resolverSistema(A, bb);
+        const [a0, a1, a2] = coef;
+
+        // Predicciones y estadísticos
+        const yhat = xs.map(x => a0 + a1 * x + a2 * x * x);
+        const ybar = Sy / n;
+        let St = 0, Sr = 0;
+        for (let i = 0; i < n; i++) {
+            St += (ys[i] - ybar) ** 2;
+            Sr += (ys[i] - yhat[i]) ** 2;
+        }
+        const Syl = Math.sqrt(Sr / (n - 3));
+        const r2 = St > 0 ? (St - Sr) / St : 1;
+
+        const matEq = tabla(['', '$a_0$', '$a_1$', '$a_2$', 'término'],
+            [[`$(${n})$`, fmt(Sx, 6), fmt(Sx2, 6), `= ${fmt(Sy, 6)}`],
+             [fmt(Sx, 6), fmt(Sx2, 6), fmt(Sx3, 6), `= ${fmt(Sxy, 6)}`],
+             [fmt(Sx2, 6), fmt(Sx3, 6), fmt(Sx4, 6), `= ${fmt(Sx2y, 6)}`]]);
+
+        const matriz3x3 = `\\begin{bmatrix} ${n} & ${fmt(Sx, 6)} & ${fmt(Sx2, 6)} \\\\ ${fmt(Sx, 6)} & ${fmt(Sx2, 6)} & ${fmt(Sx3, 6)} \\\\ ${fmt(Sx2, 6)} & ${fmt(Sx3, 6)} & ${fmt(Sx4, 6)} \\end{bmatrix}`;
+
+        const html =
+            card('🔢 Tabla de sumatorias', `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${tabla(['Sumatoria', 'Valor'], sumRows)}</div>`) +
+            card('🧩 Ecuaciones normales (sistema $3\\times3$)', `
+                ${matEq}
+                <p class="text-sm text-slate-400 mt-2">Matriz aumentada en forma simbólica:</p>
+                <p>$$\\underbrace{${matriz3x3}}_{\\text{coeficientes}} \\cdot \\begin{bmatrix} a_0 \\\\ a_1 \\\\ a_2 \\end{bmatrix} = \\begin{bmatrix} ${fmt(Sy, 6)} \\\\ ${fmt(Sxy, 6)} \\\\ ${fmt(Sx2y, 6)} \\end{bmatrix}$$</p>`) +
+            card('🎯 Ecuación del polinomio ajustado', `
+                <p class="text-lg">$$y = ${polyToLatex(coef)}$$</p>
+                <div class="grid grid-cols-3 gap-3 mt-3">
+                    <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800 text-center"><p class="text-xs text-slate-500">$a_0$</p><p class="font-bold text-sky-300">${fmt(a0, 6)}</p></div>
+                    <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800 text-center"><p class="text-xs text-slate-500">$a_1$</p><p class="font-bold text-sky-300">${fmt(a1, 6)}</p></div>
+                    <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800 text-center"><p class="text-xs text-slate-500">$a_2$</p><p class="font-bold text-sky-300">${fmt(a2, 6)}</p></div>
+                </div>`) +
+            card('📉 Ajuste estadístico', `
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800">
+                        <p class="text-xs text-slate-500 mb-1">Error estándar $S_{y/x}$</p>
+                        <p class="text-xl font-bold text-emerald-300">${fmt(Syl, 6)}</p>
+                    </div>
+                    <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800">
+                        <p class="text-xs text-slate-500 mb-1">Coef. de determinación $r^2$</p>
+                        <p class="text-xl font-bold text-emerald-300">${fmt(r2, 6)}</p>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-400">$S_r = \\sum (y_i - \\hat{y}_i)^2 = ${fmt(Sr, 6)}$ · $S_t = \\sum (y_i - \\bar{y})^2 = ${fmt(St, 6)}$</p>`) +
+            card('📈 Puntos vs. curva ajustada', `
+                <div class="relative w-full" style="height:380px"><canvas id="reg-chart"></canvas></div>
+                <div class="overflow-x-auto">${tabla(['$x_i$', '$y_i$', '$\\hat{y}_i$', 'Residuo'], xs.map((x, i) => [fmt(x, 6), fmt(ys[i], 6), fmt(yhat[i], 6), fmt(ys[i] - yhat[i], 6)]))}</div>`);
+
+        regOut.innerHTML = html;
+        typeset();
+        dibujarRegresion(xs, ys, coef);
+    } catch (e) {
+        showError(regOut, e instanceof ValidationError ? e.message : `Fallo inesperado: ${e.message}`);
+    }
+});
+
+function dibujarRegresion(xs, ys, coef) {
+    const canvas = document.getElementById('reg-chart');
+    if (!canvas) return;
+    const [a0, a1, a2] = coef;
+
+    const xMin = Math.min(...xs), xMax = Math.max(...xs);
+    const pad = (xMax - xMin) * 0.1 || 1;
+    const curva = [];
+    const N = 120;
+    for (let i = 0; i <= N; i++) {
+        const x = (xMin - pad) + ((xMax + pad) - (xMin - pad)) * i / N;
+        curva.push({ x, y: a0 + a1 * x + a2 * x * x });
+    }
+    const puntos = xs.map((x, i) => ({ x, y: ys[i] }));
+
+    if (regChart) regChart.destroy();
+    regChart = new Chart(canvas.getContext('2d'), {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    label: 'Datos',
+                    data: puntos,
+                    backgroundColor: '#38bdf8',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                },
+                {
+                    label: 'Polinomio ajustado',
+                    data: curva,
+                    type: 'line',
+                    borderColor: '#a78bfa',
+                    backgroundColor: 'rgba(167,139,250,0.12)',
+                    borderWidth: 2.5,
+                    pointRadius: 0,
+                    tension: 0.25,
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#cbd5e1', usePointStyle: true, padding: 16 } },
+                tooltip: {
+                    backgroundColor: 'rgba(15,23,42,0.95)',
+                    callbacks: {
+                        label: (ctx) => ` (${ctx.parsed.x.toFixed(4)}, ${ctx.parsed.y.toFixed(4)})`,
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    type: 'linear', position: 'bottom',
+                    title: { display: true, text: 'x', color: '#94a3b8' },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: 'rgba(148,163,184,0.12)' },
+                },
+                y: {
+                    title: { display: true, text: 'y', color: '#94a3b8' },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: 'rgba(148,163,184,0.12)' },
+                },
+            },
+        },
+    });
+}
+
+/* Render inicial de ecuaciones MathJax */
+typeset();
+</script>
+</body>
+</html>
